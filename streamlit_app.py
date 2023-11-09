@@ -84,4 +84,4 @@ if st.session_state['expanded_sentences_generate_complete']:
             st.text_area(f"你的扩句答案", value=user_input)
 
             expanded_sentence = st.session_state['expanded_sentences'][i - 1]
-            st.text_area(f"扩句案例", value=expanded_sentence, height=150, disabled=True)
+            st.text_area(f"扩句案例", value=expanded_sentence, height=200, disabled=True)

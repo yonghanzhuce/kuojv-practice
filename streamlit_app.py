@@ -3,7 +3,7 @@ from openai import OpenAI
 import time, re
 
 
-apikey = "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"
+apikey = "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"
 apikey = apikey.replace('\u200b', '')
 client = OpenAI(api_key=apikey)
 
@@ -13,6 +13,8 @@ st.title('扩句练习系统')
 # 初始化存储句子和扩句案例的变量
 if 'sentences' not in st.session_state:
     st.session_state['sentences'] = []
+if 'sentences_generate_complete' not in st.session_state:
+    st.session_state['sentences_generate_complete'] = False
 if 'expanded_sentences' not in st.session_state:
     st.session_state['expanded_sentences'] = []
 if 'expanded_sentences_not_generated' not in st.session_state:
@@ -40,7 +42,36 @@ if st.button('生成练习'):
     sentences = [sentence for sentence in sentences if sentence]
     sentences = [re.sub(r'^\d+\.\s*', '', sentence) for sentence in sentences]
     st.session_state['sentences'] = sentences
+    st.session_state['sentences_generate_complete'] = True
 
+
+# 显示简短句子和输入框用于用户输入他们的扩句答案
+for i, sentence in enumerate(st.session_state['sentences'], 1):
+    user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
+    st.text_input(f"句子 {i}", value=sentence, disabled=True, key=f"sent_{i}")
+    st.text_area(f"你的扩句答案 {i}", key=f"user_exp_{i}", value=user_input)
+
+if st.session_state['sentences_generate_complete'] and st.session_state['expanded_sentences_not_generated']:
+    st.session_state['expanded_sentences_not_generated'] = False
+    print(st.session_state['sentences'])
+    for i, sentence in enumerate(st.session_state['sentences'], 1):
+        print("Start Next")
+        time.sleep(20)
+        # 生成扩句案例
+        prompt = f"请帮我扩展以下句子，并赋予它更多情感色彩：\n{sentence}\n"
+        print("promot:", prompt)
+        response = client.chat.completions.create(
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            model="gpt-3.5-turbo",
+            
+        )
+        print("response:", response)
+        expanded_sentence = response.choices[0].message.content.strip()
+        st.session_state['expanded_sentences'].append(expanded_sentence)
+
+    st.session_state['expanded_sentences_generate_complete'] = True
 
 # 用户点击“显示答案”按钮后的逻辑
 if st.session_state['expanded_sentences_generate_complete']:
@@ -54,30 +85,3 @@ if st.session_state['expanded_sentences_generate_complete']:
 
             expanded_sentence = st.session_state['expanded_sentences'][i]
             st.text_area(f"扩句案例 {i}", value=expanded_sentence, height=150, disabled=True)
-
-
-# 显示简短句子和输入框用于用户输入他们的扩句答案
-for i, sentence in enumerate(st.session_state['sentences'], 1):
-    user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
-    st.text_input(f"句子 {i}", value=sentence, disabled=True, key=f"sent_{i}")
-    st.text_area(f"你的扩句答案 {i}", key=f"user_exp_{i}", value=user_input)
-
-if st.session_state['sentences'] and st.session_state['expanded_sentences_not_generated']:
-    st.session_state['expanded_sentences_not_generated'] = False
-    for i, sentence in enumerate(st.session_state['sentences'], 1):
-        time.sleep(20)
-        # 生成扩句案例
-        prompt = f"请帮我扩展以下句子，并赋予它更多情感色彩：\n{sentence}\n"
-        print("promot:", prompt)
-        response = client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            model="gpt-3.5-turbo",
-            
-        )
-        expanded_sentence = response.choices[0].message.content.strip()
-        st.session_state['expanded_sentences'].append(expanded_sentence)
-        
-    st.session_state['expanded_sentences_generate_complete'] = True
-

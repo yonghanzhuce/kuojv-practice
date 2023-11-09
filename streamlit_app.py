@@ -49,7 +49,7 @@ if st.button('生成练习'):
 for i, sentence in enumerate(st.session_state['sentences'], 1):
     user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
     st.text_input(f"句子 {i}", value=sentence, disabled=True, key=f"sent_{i}")
-    st.text_area(f"你的扩句答案 {i}", key=f"user_exp_{i}", value=user_input)
+    st.text_area(f"你的扩句答案", key=f"user_exp_{i}", value=user_input)
 
 if st.session_state['sentences_generate_complete'] and st.session_state['expanded_sentences_not_generated']:
     st.session_state['expanded_sentences_not_generated'] = False
@@ -81,7 +81,7 @@ if st.session_state['expanded_sentences_generate_complete']:
             st.text_input(f"句子 {i}", value=sentence, disabled=True)
             user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
             # 你可以在这里添加逻辑来处理或显示用户的输入
-            st.text_area(f"你的扩句答案 {i}", value=user_input)
+            st.text_area(f"你的扩句答案", value=user_input)
 
             expanded_sentence = st.session_state['expanded_sentences'][i - 1]
-            st.text_area(f"扩句案例 {i}", value=expanded_sentence, height=150, disabled=True)
+            st.text_area(f"扩句案例", value=expanded_sentence, height=150, disabled=True)

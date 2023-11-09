@@ -78,5 +78,6 @@ if st.session_state['sentences'] and st.session_state['expanded_sentences_not_ge
         )
         expanded_sentence = response.choices[0].message.content.strip()
         st.session_state['expanded_sentences'].append(expanded_sentence)
-        st.session_state['expanded_sentences_generate_complete'] = True
+        
+    st.session_state['expanded_sentences_generate_complete'] = True
 

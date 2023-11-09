@@ -1,82 +1,82 @@
 import streamlit as st
-import random
+from openai import OpenAI
+import time, re
 
-# 设置页面标题
-st.title('老何家数字记忆训练')
 
-# 初始化session_state
-if 'show_numbers' not in st.session_state:
-    st.session_state.show_numbers = False
-if 'random_numbers' not in st.session_state:
-    st.session_state.random_numbers = []
+apikey = "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"
+apikey = apikey.replace('\u200b', '')
+client = OpenAI(api_key=apikey)
 
-# 用于切换显示状态的函数
-def toggle_visibility():
-    st.session_state.show_numbers = not st.session_state.show_numbers
+# Streamlit 页面布局
+st.title('扩句练习系统')
 
-# 生成随机数字并更新显示状态
-def generate_numbers():
-    st.session_state.random_numbers = [str(random.randint(100000, 999999)) for _ in range(5)]
-    st.session_state.show_numbers = True
+# 初始化存储句子和扩句案例的变量
+if 'sentences' not in st.session_state:
+    st.session_state['sentences'] = []
+if 'expanded_sentences' not in st.session_state:
+    st.session_state['expanded_sentences'] = []
+if 'expanded_sentences_not_generated' not in st.session_state:
+    st.session_state['expanded_sentences_not_generated'] = True
+if 'expanded_sentences_generate_complete' not in st.session_state:
+    st.session_state['expanded_sentences_generate_complete'] = False
 
-# 在HTML中添加自定义样式
-# st.markdown("""
-# <style>
-# div.stButton > button:first-child {
-#     margin: 2px 2px 2px 0px;
-#     background-color: #008CBA; 
-#     color: white;
-# }
-# div.stButton > button:nth-child(2) {
-#     margin: 2px;
-#     background-color: #e7e7e7; 
-#     color: black;
-# }
-# </style>""", unsafe_allow_html=True)
+# 用户点击“生成练习”按钮后的逻辑
+if st.button('生成练习'):
+    # 使用 OpenAI API 生成五个简短的句子
+    prompt = "请提供两个简短的句子，用于扩句练习。"
 
-# 创建并排的两个按钮
-col1, col2 = st.columns([1, 4])
-with col1:
-    generate_button = st.button('生成随机数字')
-with col2:
-    toggle_button = st.button('隐藏/显示数字')
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        model="gpt-3.5-turbo",
+    )
+    # 解析生成的句子
+    print(chat_completion)
+    print(chat_completion.choices[0].message.content)
+    sentences = chat_completion.choices[0].message.content.strip().split('\n')
 
-if generate_button:
-    generate_numbers()
+    # sentences = [resp['text'].strip() for resp in response['choices']]
+    sentences = [sentence for sentence in sentences if sentence]
+    sentences = [re.sub(r'^\d+\.\s*', '', sentence) for sentence in sentences]
+    st.session_state['sentences'] = sentences
 
-if toggle_button:
-    toggle_visibility()
 
-# 检查是否需要显示数字
-if st.session_state.show_numbers:
-    st.write('记住这些数字:')
-    for number in st.session_state.random_numbers:
-        st.write(number)
+# 用户点击“显示答案”按钮后的逻辑
+if st.session_state['expanded_sentences_generate_complete']:
+    if st.button('显示答案'):
 
-# 输入框，用于用户输入记忆的数字
-user_input = st.text_input('输入你记忆的数字（用空格分隔）:')
+        for i, sentence in enumerate(st.session_state['sentences'], 1):
+            st.text_input(f"句子 {i}", value=sentence, disabled=True)
+            user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
+            # 你可以在这里添加逻辑来处理或显示用户的输入
+            st.text_area(f"你的扩句答案 {i}", key=f"user_exp_{i}", value=user_input)
 
-# 校验按钮和功能
-if st.button('校验记忆的数字'):
-    # 分割用户输入，转换为列表
-    user_numbers = user_input.split()
-    # 开始校验
-    if user_numbers == st.session_state.random_numbers:
-        st.success('恭喜！你记得非常准确。')
-    else:
-        st.error('记忆有误，请再接再厉！')
-        # 对比正确与错误的数字，并构建带有颜色标记的HTML字符串
-        corrected_numbers_html = []
-        for orig_num, user_num in zip(st.session_state.random_numbers, user_numbers):
-            # 分别比较每一位数字
-            corrected_num = "".join(
-                [f"<span style='color:red'>{u}</span>" if u != o else o for u, o in zip(user_num.ljust(6, ' '), orig_num)]
-            )
-            corrected_numbers_html.append(corrected_num)
-        
-        # 对于用户忘记输入的数字，显示整个数字并标红
-        for i in range(len(user_numbers), len(st.session_state.random_numbers)):
-            corrected_numbers_html.append(f"<span style='color:red'>{st.session_state.random_numbers[i]}</span>")
+            expanded_sentence = st.session_state['expanded_sentences'][i]
+            st.text_area(f"扩句案例 {i}", value=expanded_sentence, height=150, disabled=True)
 
-        # 用join方法将列表合成字符串并用空格分隔，然后用markdown显示
-        st.markdown(' '.join(corrected_numbers_html), unsafe_allow_html=True)
+
+# 显示简短句子和输入框用于用户输入他们的扩句答案
+for i, sentence in enumerate(st.session_state['sentences'], 1):
+    user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
+    st.text_input(f"句子 {i}", value=sentence, disabled=True, key=f"sent_{i}")
+    st.text_area(f"你的扩句答案 {i}", key=f"user_exp_{i}", value=user_input)
+
+if st.session_state['sentences'] and st.session_state['expanded_sentences_not_generated']:
+    st.session_state['expanded_sentences_not_generated'] = False
+    for i, sentence in enumerate(st.session_state['sentences'], 1):
+        time.sleep(20)
+        # 生成扩句案例
+        prompt = f"请帮我扩展以下句子，并赋予它更多情感色彩：\n{sentence}\n"
+        print("promot:", prompt)
+        response = client.chat.completions.create(
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            model="gpt-3.5-turbo",
+            
+        )
+        expanded_sentence = response.choices[0].message.content.strip()
+        st.session_state['expanded_sentences'].append(expanded_sentence)
+        st.session_state['expanded_sentences_generate_complete'] = True
+

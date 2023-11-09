@@ -37,8 +37,8 @@ if st.button('生成练习'):
         model="gpt-3.5-turbo",
     )
     # 解析生成的句子
-    print(chat_completion)
-    print(chat_completion.choices[0].message.content)
+    # print(chat_completion)
+    # print(chat_completion.choices[0].message.content)
     sentences = chat_completion.choices[0].message.content.strip().split('\n')
 
     # sentences = [resp['text'].strip() for resp in response['choices']]
@@ -59,13 +59,13 @@ for i, sentence in enumerate(st.session_state['sentences'], 1):
 
 if st.session_state['sentences_generate_complete'] and st.session_state['expanded_sentences_not_generated']:
     st.session_state['expanded_sentences_not_generated'] = False
-    print(st.session_state['sentences'])
+    # print(st.session_state['sentences'])
     for i, sentence in enumerate(st.session_state['sentences'], 1):
-        print("Start Next")
+        # print("Start Next")
         time.sleep(20)
         # 生成扩句案例
         prompt = f"请帮我扩展以下句子，并赋予它更多情感色彩：\n{sentence}\n"
-        print("promot:", prompt)
+        # print("promot:", prompt)
         response = client.chat.completions.create(
             messages=[
                 {"role": "user", "content": prompt}
@@ -73,10 +73,10 @@ if st.session_state['sentences_generate_complete'] and st.session_state['expande
             model="gpt-3.5-turbo",
             
         )
-        print("response:", response)
+        # print("response:", response)
         expanded_sentence = response.choices[0].message.content.strip()
         st.session_state['expanded_sentences'].append(expanded_sentence)
-    print("Process Complete")
+    # print("Process Complete")
     st.session_state['expanded_sentences_generate_complete'] = True
 
 # 用户点击“显示答案”按钮后的逻辑

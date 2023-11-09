@@ -2,11 +2,6 @@ import streamlit as st
 from openai import OpenAI
 import time, re
 
-
-apikey = "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"
-apikey = apikey.replace('\u200b', '')
-client = OpenAI(api_key=apikey)
-
 # Streamlit 页面布局
 st.title('扩句练习系统')
 
@@ -21,6 +16,14 @@ if 'expanded_sentences_not_generated' not in st.session_state:
     st.session_state['expanded_sentences_not_generated'] = True
 if 'expanded_sentences_generate_complete' not in st.session_state:
     st.session_state['expanded_sentences_generate_complete'] = False
+
+
+# 用户输入OpenAI API密钥
+apikey = st.text_input("请输入OpenAI API密钥")
+if apikey:
+    # 使用用户提供的OpenAI API密钥创建OpenAI客户端
+    apikey = apikey.replace('\u200b', '')
+client = OpenAI(api_key=apikey)
 
 # 用户点击“生成练习”按钮后的逻辑
 if st.button('生成练习'):

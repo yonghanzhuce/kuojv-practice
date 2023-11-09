@@ -3,7 +3,7 @@ from openai import OpenAI
 import time, re
 
 
-apikey = "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"
+apikey = "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"
 apikey = apikey.replace('\u200b', '')
 client = OpenAI(api_key=apikey)
 
@@ -70,7 +70,7 @@ if st.session_state['sentences_generate_complete'] and st.session_state['expande
         print("response:", response)
         expanded_sentence = response.choices[0].message.content.strip()
         st.session_state['expanded_sentences'].append(expanded_sentence)
-
+    print("Process Complete")
     st.session_state['expanded_sentences_generate_complete'] = True
 
 # 用户点击“显示答案”按钮后的逻辑
@@ -81,7 +81,7 @@ if st.session_state['expanded_sentences_generate_complete']:
             st.text_input(f"句子 {i}", value=sentence, disabled=True)
             user_input = st.session_state.get(f"user_exp_{i}", "")  # 获取用户输入的答案
             # 你可以在这里添加逻辑来处理或显示用户的输入
-            st.text_area(f"你的扩句答案 {i}", key=f"user_exp_{i}", value=user_input)
+            st.text_area(f"你的扩句答案 {i}", value=user_input)
 
-            expanded_sentence = st.session_state['expanded_sentences'][i]
+            expanded_sentence = st.session_state['expanded_sentences'][i - 1]
             st.text_area(f"扩句案例 {i}", value=expanded_sentence, height=150, disabled=True)

@@ -43,6 +43,9 @@ if st.button('生成练习'):
     sentences = [re.sub(r'^\d+\.\s*', '', sentence) for sentence in sentences]
     st.session_state['sentences'] = sentences
     st.session_state['sentences_generate_complete'] = True
+    st.session_state['expanded_sentences'] = []
+    st.session_state['expanded_sentences_not_generated'] = True
+    st.session_state['expanded_sentences_generate_complete'] = False
 
 
 # 显示简短句子和输入框用于用户输入他们的扩句答案
